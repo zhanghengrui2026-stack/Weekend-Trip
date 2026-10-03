@@ -1,10 +1,10 @@
-import {activities,routeOptions,checkedAt} from './data.js?v=20261004-2';
+import {activities,routeOptions,checkedAt,campuses} from './data.js?v=20261004-3';
 
 export const byId=id=>activities.find(a=>a.id===id);
 export function todayInShanghai(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 export function validDate(value){if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const d=new Date(value+'T12:00:00Z');return !Number.isNaN(d.getTime())&&d.toISOString().slice(0,10)===value;}
 export function nextSaturday(){const d=new Date(todayInShanghai()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+(6-d.getUTCDay()+7)%7);return d.toISOString().slice(0,10);}
-export const defaultPrefs=()=>({budget:100,people:2,duration:6,weather:'sun',date:nextSaturday(),start:'13:00',origin:'我的学校 / 出发地',commute:30,food:25,transport:10,buffer:5,rest:30});
+export const defaultPrefs=()=>({budget:100,people:2,duration:6,weather:'sun',date:nextSaturday(),start:'13:00',origin:'我的学校 / 出发地',commute:30,food:25,transport:10,buffer:5,rest:30,campus:'custom'});
 export function normalizePrefs(input={}){
  const p=defaultPrefs();if(!input||typeof input!=='object')return p;
  for(const [key,allowed] of Object.entries({budget:[50,100,150,200],people:[1,2,4],duration:[3,6,8],weather:['sun','rain']}))if(allowed.includes(input[key]))p[key]=input[key];
@@ -12,13 +12,15 @@ export function normalizePrefs(input={}){
  if(validDate(input.date))p.date=input.date;
  if(typeof input.start==='string'&&/^(0[6-9]|1[0-8]):[0-5]\d$/.test(input.start))p.start=input.start;
  if(typeof input.origin==='string'&&input.origin.trim())p.origin=input.origin.trim().slice(0,60);
+ if(campuses.some(c=>c.id===input.campus))p.campus=input.campus;
  return p;
 }
 export function costFor(ids,prefs){const items=ids.map(byId).filter(Boolean);const c={activities:items.reduce((s,a)=>s+a.price,0),food:items.length?prefs.food:0,transport:items.length?prefs.transport:0,buffer:items.length?prefs.buffer:0};return {...c,total:c.activities+c.food+c.transport+c.buffer};}
 const transferBuffers=new Map([
  [['xujiahui-park','wukang-building'].sort().join('|'),35],
  [['xuhui-art','painting-museum'].sort().join('|'),25],
- [['tushanwan','xujiahui-library'].sort().join('|'),25]
+ [['tushanwan','xujiahui-library'].sort().join('|'),25],
+ [['film-museum','xujiahui-library'].sort().join('|'),25]
 ]);
 export function transferMinutes(a,b){return transferBuffers.get([a,b].sort().join('|'))??40;}
 export function clockTime(mins){return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;}
@@ -57,3 +59,6 @@ export function chooseRoute(prefs,category='all'){
 }
 export function sourceAgeDays(date=todayInShanghai()){return Math.floor((new Date(date+'T12:00:00Z')-new Date(checkedAt+'T12:00:00Z'))/86400000);}
 export function planSignature(ids,prefs){return JSON.stringify([ids,prefs.date,prefs.start,prefs.origin,prefs.commute,prefs.rest,prefs.food,prefs.transport,prefs.buffer]);}
+
+export function campusPrefs(input,id){const p=normalizePrefs(input),campus=campuses.find(c=>c.id===id);return campus?{...p,campus:id,origin:campus.name+'（'+campus.address+'）',commute:campus.reserve}:{...p,campus:'custom'};}
+export function mapSearchUrl(keyword){const url=new URL('https://uri.amap.com/search');url.searchParams.set('keyword',String(keyword));url.searchParams.set('city','上海');url.searchParams.set('view','map');url.searchParams.set('src','WeekendTrip');url.searchParams.set('callnative','0');return url.href;}

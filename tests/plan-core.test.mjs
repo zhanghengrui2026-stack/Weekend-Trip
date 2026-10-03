@@ -1,18 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {activities,routeOptions} from '../data.js';
-import {defaultPrefs,normalizePrefs,evaluateRoute,chooseRoute,validDate,planSignature} from '../plan-core.js';
+import {defaultPrefs,normalizePrefs,evaluateRoute,chooseRoute,validDate,planSignature,campusPrefs,mapSearchUrl} from '../plan-core.js';
 
 const prefs=defaultPrefs();
 function dayAfter(date,n){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);}
 
 test('curated routes reference real, sourced places only',()=>{
- assert.equal(activities.length,6);
+ assert.equal(activities.length,7);
  for(const a of activities){assert.ok(a.address);assert.match(a.source,/^https?:\/\//);assert.ok(a.opening);assert.ok(a.check);}
  for(const r of routeOptions){assert.equal(r.ids.length,2);assert.ok(r.ids.every(id=>activities.some(a=>a.id===id)));}
 });
-test('all three Saturday afternoon routes include full reserves, commute, rest and transfers',()=>{
- for(const r of routeOptions){const p=evaluateRoute(r.ids,prefs);assert.equal(p.cost.total,40);assert.ok(p.fits);assert.equal(p.returnAt-p.departure,p.totalMinutes);assert.equal(p.totalMinutes,p.stops.reduce((s,v)=>s+v.a.minutes,0)+60+p.transfer+30+p.waiting);}
+test('Saturday routes include admission, reserves, commute, rest and transfers',()=>{
+ for(const r of routeOptions){const p=evaluateRoute(r.ids,prefs);assert.equal(p.cost.total,r.id==='film'?100:40);assert.ok(p.fits);assert.equal(p.returnAt-p.departure,p.totalMinutes);assert.equal(p.totalMinutes,p.stops.reduce((s,v)=>s+v.a.minutes,0)+60+p.transfer+30+p.waiting);}
+});
+test('paid option fits 100 yuan but not 50 and does not assume a student discount',()=>{
+ const ids=routeOptions.find(r=>r.id==='film').ids;
+ assert.equal(evaluateRoute(ids,prefs).cost.activities,60);
+ assert.equal(evaluateRoute(ids,{...prefs,budget:50}).fits,false);
+ assert.equal(evaluateRoute(ids,{...prefs,food:40}).cost.total,115);
+});
+test('campus presets keep budget and date, and navigation encodes user text safely',()=>{
+ const p=campusPrefs({...prefs,food:0},'ecust-xuhui');assert.equal(p.commute,45);assert.equal(p.food,0);assert.equal(p.date,prefs.date);assert.match(p.origin,/梅陇路130号/);
+ assert.equal(normalizePrefs(p).campus,'ecust-xuhui');assert.equal(normalizePrefs({campus:'unknown'}).campus,'custom');
+ const keyword='学校 & 朋友 #地点';const url=new URL(mapSearchUrl(keyword));assert.equal(url.origin,'https://uri.amap.com');assert.equal(url.searchParams.get('keyword'),keyword);assert.equal(url.searchParams.get('city'),'上海');
 });
 test('rain excludes outdoor routes, generation selects indoor places',()=>{
  const input={...prefs,weather:'rain'};
