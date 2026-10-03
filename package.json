@@ -1,0 +1,8 @@
+{
+  "name": "weekend-trip",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/plan-core.test.mjs"
+  }
+}
