@@ -1,5 +1,11 @@
 # 周末出逃 · Weekend Trip
 
+## [点击这里，在线体验「周末出逃」](https://zhanghengrui2026-stack.github.io/Weekend-Trip/)
+
+**作品已部署，可直接体验，无需登录或安装。支持手机和电脑。**
+
+在线作品地址：<https://zhanghengrui2026-stack.github.io/Weekend-Trip/>
+
 面向大学生的「周末城市探索指南」交互原型。按兴趣、预算、天气与同行人数，从上海的城市灵感中安排一次轻松出游。
 
 ## 体验路径
