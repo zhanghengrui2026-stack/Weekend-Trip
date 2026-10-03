@@ -1,4 +1,4 @@
-import {activities,routeOptions,checkedAt} from './data.js';
+import {activities,routeOptions,checkedAt} from './data.js?v=20261004-2';
 
 export const byId=id=>activities.find(a=>a.id===id);
 export function todayInShanghai(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}

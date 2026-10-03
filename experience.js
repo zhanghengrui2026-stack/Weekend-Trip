@@ -1,6 +1,6 @@
-import {activities,categories,sampleTeams,routeOptions,checkedAt} from './data.js';
-import {normalizePrefs,costFor,evaluateRoute,chooseRoute,todayInShanghai,validDate,sourceAgeDays,planSignature} from './plan-core.js';
-import {icon,navItems} from './app.js';
+import {activities,categories,sampleTeams,routeOptions,checkedAt} from './data.js?v=20261004-2';
+import {normalizePrefs,costFor,evaluateRoute,chooseRoute,todayInShanghai,validDate,sourceAgeDays,planSignature} from './plan-core.js?v=20261004-2';
+import {icon,navItems} from './app.js?v=20261004-2';
 
 const $=(s)=>document.querySelector(s);
 const escapeHtml=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
